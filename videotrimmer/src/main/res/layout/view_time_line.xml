@@ -6,64 +6,41 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-  <FrameLayout
-      android:id="@+id/layout_surface_view"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:background="@android:color/black"
-      app:layout_constraintBottom_toTopOf="@+id/layout"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent">
-
-    <VideoView
-        android:id="@+id/video_loader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
-
-    <ImageView
-        android:id="@+id/icon_video_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:srcCompat="@drawable/ic_vector_play_gray"
-        tools:ignore="ContentDescription"/>
-
-  </FrameLayout>
-
-
   <RelativeLayout
-      android:id="@+id/layout"
+      android:id="@+id/topLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/background_video_color"
-      app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent">
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
 
     <LinearLayout
         android:id="@+id/timeText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="visible">
+        android:visibility="visible"
+        android:weightSum="3">
 
       <TextView
           android:id="@+id/textTimeSelection"
-          android:layout_width="wrap_content"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:layout_marginLeft="@dimen/_5sdp"
           android:layout_marginStart="@dimen/_5sdp"
-          android:gravity="center"
-          android:textColor="@android:color/white"/>
+          android:layout_weight="1"
+          android:textColor="@android:color/white"
+          tools:text="00:00 - 01:02"/>
 
       <TextView
           android:id="@+id/textTime"
-          android:layout_width="wrap_content"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:gravity="center"
           android:textColor="@android:color/white"
-          android:visibility="gone"/>
+          tools:text="00:00"/>
 
       <TextView
           android:id="@+id/textSize"
@@ -73,7 +50,8 @@
           android:layout_marginRight="@dimen/_5sdp"
           android:layout_weight="1"
           android:gravity="end"
-          android:textColor="#FFFFFF"/>
+          android:textColor="#FFFFFF"
+          tools:text="5 MB"/>
 
     </LinearLayout>
 
@@ -103,39 +81,66 @@
         android:layout_gravity="center_horizontal"
         android:progressDrawable="@android:color/transparent"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/timeLineBar"
-        android:orientation="horizontal">
-
-      <Button
-          android:id="@+id/btCancel"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:background="@drawable/shape_black_button"
-          android:text="@string/cancel"
-          android:textColor="@android:color/white"/>
-
-      <View
-          android:layout_width="1dp"
-          android:layout_height="match_parent"
-          android:layout_marginBottom="5dp"
-          android:layout_marginTop="5dp"
-          android:background="@color/line_button"/>
-
-      <Button
-          android:id="@+id/btSave"
-          android:layout_width="0dp"
-          android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:background="@drawable/shape_black_button"
-          android:text="@string/save"
-          android:textColor="@android:color/white"/>
-
-    </LinearLayout>
-
   </RelativeLayout>
+
+  <FrameLayout
+      android:id="@+id/layout_surface_view"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:background="@android:color/black"
+      app:layout_constraintBottom_toTopOf="@+id/bottomLayout"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/topLayout">
+
+    <VideoView
+        android:id="@+id/video_loader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
+
+    <ImageView
+        android:id="@+id/icon_video_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/ic_vector_play_gray"
+        tools:ignore="ContentDescription"/>
+
+  </FrameLayout>
+
+  <LinearLayout
+      android:id="@+id/bottomLayout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent">
+
+    <Button
+        android:id="@+id/btCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/shape_button"
+        android:text="@string/cancel"
+        android:textColor="@android:color/white"/>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="@color/white"/>
+
+    <Button
+        android:id="@+id/btSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/shape_button"
+        android:text="@string/save"
+        android:textColor="@android:color/white"/>
+
+  </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

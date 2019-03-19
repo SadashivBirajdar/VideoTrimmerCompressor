@@ -32,6 +32,7 @@ import java.util.Locale;
 import static com.deep.videotrimmerexample.Constants.EXTRA_VIDEO_PATH;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener {
+  public static final String TAG = "VideoCompressor";
   ActivityMainBinding mBinder;
   public static final int PERMISSION_STORAGE = 100;
   private final int REQUEST_VIDEO_TRIMMER_RESULT = 342;
@@ -163,6 +164,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/Silicompressor/videos");
             //  String path = FileUtils.getRealPath(this, selectedVideoUri);
             String videoFilePath = selectedVideoUri.getPath();
+            Log.d(TAG, "onActivityResult: " + videoFilePath);
             //compress and output new video specs
             if (f.mkdirs() || f.isDirectory()) {
               new VideoCompressAsyncTask(this).execute(videoFilePath, f.getPath());

@@ -33,7 +33,6 @@ public class VideoTrimmerActivity extends BaseActivity implements OnTrimVideoLis
     tvCroppingMessage = (TextView) findViewById(R.id.tvCroppingMessage);
 
     if (mVideoTrimmer != null && path != null) {
-      mVideoTrimmer.setMaxDuration(100);
       mVideoTrimmer.setOnTrimVideoListener(this);
       mVideoTrimmer.setVideoURI(Uri.parse(path));
     } else {

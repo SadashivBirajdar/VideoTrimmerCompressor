@@ -58,10 +58,12 @@ public class DeepVideoTrimmer extends FrameLayout
   private Uri mSrc;
   private String mFinalPath;
 
-  private int mMaxDuration;
   private List<OnProgressVideoListener> mListeners;
   private OnTrimVideoListener mOnTrimVideoListener;
 
+  private final static int DEFAULT_VIDEO_WIDTH = 640;
+  private final static int DEFAULT_VIDEO_HEIGHT = 360;
+  private float compressionRatio = (long) (20 * 1024);  // 20 MB
   private int mDuration = 0;
   private int maxFileSize = 15 * 1024;  // 15 MB
   private int mTimeVideo = 0;
@@ -99,7 +101,7 @@ public class DeepVideoTrimmer extends FrameLayout
   };
 
   @NonNull
-  private final View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+  private final OnTouchListener mTouchListener = new OnTouchListener() {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View v, @NonNull MotionEvent event) {
@@ -150,7 +152,8 @@ public class DeepVideoTrimmer extends FrameLayout
         public void onClick(View view) {
 
           if (letUserProceed) {
-            if (mStartPosition <= 0 && mEndPosition >= mDuration) {
+            // user didn't selected cropping duration and compression ratio is 1MB
+            if (mStartPosition <= 0 && mEndPosition >= mDuration && compressionRatio == 1024.0) {
               mOnTrimVideoListener.getResult(mSrc);
             } else {
               mPlayView.setVisibility(View.VISIBLE);
@@ -160,6 +163,9 @@ public class DeepVideoTrimmer extends FrameLayout
               mediaMetadataRetriever.setDataSource(getContext(), mSrc);
               long METADATA_KEY_DURATION = Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
 
+              if (mSrc.getPath() == null) {
+                return;
+              }
               File file = new File(mSrc.getPath());
 
               if (mTimeVideo < MIN_TIME_FRAME) {
@@ -205,12 +211,6 @@ public class DeepVideoTrimmer extends FrameLayout
     progressVideoView.setLayoutParams(lp);
 
     mHolderTopView.setOnSeekBarChangeListener(this);
-    mHolderTopView.setOnTouchListener(new OnTouchListener() {
-      @Override
-      public boolean onTouch(View view, MotionEvent motionEvent) {
-        return true;
-      }
-    });
 
     mVideoView.setOnPreparedListener(this);
     mVideoView.setOnCompletionListener(this);
@@ -224,19 +224,56 @@ public class DeepVideoTrimmer extends FrameLayout
 
   public void setVideoURI(final Uri videoURI) {
     mSrc = videoURI;
-
-    getSizeFile(false);
-
+    initMediaData();
     mVideoView.setVideoURI(mSrc);
     mVideoView.requestFocus();
-
     mTimeLineView.setVideo(mSrc);
   }
 
-  @SuppressWarnings("unused")
   public void setDestinationPath(final String finalPath) {
-    mFinalPath = finalPath;
+    mFinalPath = finalPath + File.separator;
     Log.d(TAG, "Setting custom path " + mFinalPath);
+  }
+
+  private void initMediaData() {
+    if (mSrc.getPath() == null) {
+      return;
+    }
+    File file = new File(mSrc.getPath());
+    MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+    retriever.setDataSource(file.getPath());
+    String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+    String height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+    int originalWidth = Integer.valueOf(width);
+    int originalHeight = Integer.valueOf(height);
+    Log.i(TAG, "checkCompressionRatio: originalWidth = " + originalWidth + " originalHeight = " + originalHeight);
+    if (originalWidth <= DEFAULT_VIDEO_WIDTH || originalHeight <= DEFAULT_VIDEO_HEIGHT) {
+      compressionRatio = (long) (1024); // 1 MB - no compression
+    }
+    String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+    int totalDuration = Integer.valueOf(duration) / 1000;
+
+    long originalLength = file.length();
+    long totalFileSizeInKB = (originalLength / 1024);
+    int compressedTotalSize = (int) getCompressedSize(totalFileSizeInKB);
+    if (compressedTotalSize <= maxFileSize) {
+      getSizeFile(false);
+      mStartPosition = 0;
+      mEndPosition = totalDuration * 1000;
+      initialLength = totalDuration;
+    } else {
+      int newDuration = (int) Math.ceil((float) maxFileSize * totalDuration / compressedTotalSize);
+      int maxDuration = newDuration > 0 ? newDuration : totalDuration;
+
+      mStartPosition = 0;
+      mEndPosition = maxDuration * 1000;
+      initialLength = maxDuration;
+      // set size for updated duration
+      long newSize = ((compressedTotalSize / totalDuration) * maxDuration);
+      newSize = (long) (newSize * compressionRatio);
+      setVideoSize(newSize / 1024);
+    }
+    Log.i(TAG, "checkCompressionRatio: compressionRatio = " + compressionRatio);
   }
 
   private void setDefaultDestinationPath() {
@@ -306,7 +343,6 @@ public class DeepVideoTrimmer extends FrameLayout
 
     mDuration = mVideoView.getDuration();
     setSeekBarPosition();
-    getSizeFile(false);
     setTimeFrames();
     setTimeVideo(0);
     letUserProceed = getCroppedFileSize() < maxFileSize;
@@ -322,24 +358,14 @@ public class DeepVideoTrimmer extends FrameLayout
 
   private void setSeekBarPosition() {
 
-    if (mDuration >= mMaxDuration) {
-      mStartPosition = mDuration / 2 - mMaxDuration / 2;
-      mEndPosition = mDuration / 2 + mMaxDuration / 2;
-
-      mRangeSeekBarView.setThumbValue(0, (mStartPosition * 100) / mDuration);
-      mRangeSeekBarView.setThumbValue(1, (mEndPosition * 100) / mDuration);
-    } else {
-      mStartPosition = 0;
-      mEndPosition = mDuration;
-    }
+    mRangeSeekBarView.setThumbValue(0, 0f);
+    mRangeSeekBarView.setThumbValue(1, (float) (mEndPosition * 100) / mDuration);
 
     setProgressBarPosition(mStartPosition);
     mVideoView.seekTo(mStartPosition);
 
     mTimeVideo = mDuration;
     mRangeSeekBarView.initMaxWidth();
-
-    initialLength = ((mEndPosition - mStartPosition) / 1000);
   }
 
   private void startTrimVideo(@NonNull final File file, @NonNull final String dst, final int startVideo, final int endVideo, @NonNull final OnTrimVideoListener callback) {
@@ -426,7 +452,7 @@ public class DeepVideoTrimmer extends FrameLayout
       newSize = ((initSize / initialLength) * (mEndPosition - mStartPosition));
       setVideoSize(newSize / 1024);
     } else {
-      if (mOriginSizeFile == 0) {
+      if (mOriginSizeFile == 0 && mSrc.getPath() != null) {
         File file = new File(mSrc.getPath());
         mOriginSizeFile = file.length();
         long fileSizeInKB = mOriginSizeFile / 1024;
@@ -447,11 +473,13 @@ public class DeepVideoTrimmer extends FrameLayout
   }
 
   private float getCompressedSize(long fileSizeInKB) {
-    float compressionRatio = (long) (25 * 1024);  // 25 MB
+    if (compressionRatio == 1024.0) {
+      return fileSizeInKB;
+    }
     float estimatedCompressedFileSize;
     if (fileSizeInKB > compressionRatio) {
       estimatedCompressedFileSize = (fileSizeInKB / compressionRatio) * 1024;
-    } else if (fileSizeInKB > 40) {
+    } else if (fileSizeInKB > 30) {
       estimatedCompressedFileSize = (fileSizeInKB / 40f);
     } else {
       estimatedCompressedFileSize = 1;
@@ -460,6 +488,9 @@ public class DeepVideoTrimmer extends FrameLayout
   }
 
   private long getFileSize() {
+    if (mSrc.getPath() == null) {
+      return 0;
+    }
     File file = new File(mSrc.getPath());
     mOriginSizeFile = file.length();
     return mOriginSizeFile / 1024;
@@ -473,19 +504,8 @@ public class DeepVideoTrimmer extends FrameLayout
     return compressedSize / 1024;
   }
 
-  @SuppressWarnings("unused")
   public void setOnTrimVideoListener(OnTrimVideoListener onTrimVideoListener) {
     mOnTrimVideoListener = onTrimVideoListener;
-  }
-
-  public void setMaxDuration(int maxDuration) {
-    if (maxDuration == 0) {
-      mMaxDuration = (mEndPosition - mStartPosition) * 1000;
-    } else if (maxDuration < 0) {
-      mMaxDuration = -maxDuration * 1000;
-    } else {
-      mMaxDuration = maxDuration * 1000;
-    }
   }
 
   @Override
@@ -527,10 +547,10 @@ public class DeepVideoTrimmer extends FrameLayout
     int position = mVideoView.getCurrentPosition();
     if (all) {
       for (OnProgressVideoListener item : mListeners) {
-        item.updateProgress(position, mDuration, ((position * 100) / mDuration));
+        item.updateProgress(position, mDuration, (float) ((position * 100) / mDuration));
       }
     } else {
-      mListeners.get(1).updateProgress(position, mDuration, ((position * 100) / mDuration));
+      mListeners.get(1).updateProgress(position, mDuration, (float) ((position * 100) / mDuration));
     }
   }
 
