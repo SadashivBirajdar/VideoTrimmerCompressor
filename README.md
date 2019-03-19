@@ -1,5 +1,12 @@
 Thanks to Deep for Video trimming part and thanks to Toure Nathan for compression part.
 
+![alt text](images/trimmer.png "Trimmer Preview")
+
+![alt text](images/compression.png "Compression Preview")
+
+![alt text](images/result.png "Compression Completed")
+
+
 # Video Trimmer
 Whatsapp like video trimmer to trim videos within a defined file size.
 https://github.com/deepandroid/video-trimmer
