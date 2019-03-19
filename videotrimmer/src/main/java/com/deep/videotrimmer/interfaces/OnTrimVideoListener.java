@@ -12,4 +12,6 @@ public interface OnTrimVideoListener {
   void getResult(final Uri uri);
 
   void cancelAction();
+
+  void trimStarted();
 }

@@ -1,26 +1,22 @@
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-  <FrameLayout
+  <com.deep.videotrimmer.DeepVideoTrimmer
+      android:id="@+id/timeLine"
       android:layout_width="match_parent"
-      android:layout_height="match_parent">
+      android:layout_height="match_parent"/>
 
-    <com.deep.videotrimmer.DeepVideoTrimmer
-        android:id="@+id/timeLine"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+  <TextView
+      android:id="@+id/tvCroppingMessage"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@color/blackOverlay"
+      android:gravity="center"
+      android:text="@string/str_cropping_video_please_wait"
+      android:textColor="@color/white"
+      android:textSize="14sp"
+      android:textStyle="bold"
+      android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/tvCroppingMessage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/blackOverlay"
-        android:gravity="center"
-        android:text="@string/str_cropping_video_please_wait"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:visibility="gone"/>
-
-  </FrameLayout>
-
-</layout>
+</FrameLayout>

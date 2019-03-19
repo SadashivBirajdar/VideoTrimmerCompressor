@@ -176,6 +176,7 @@ public class DeepVideoTrimmer extends FrameLayout
                   mStartPosition -= (MIN_TIME_FRAME - mTimeVideo);
                 }
               }
+              mOnTrimVideoListener.trimStarted();
               startTrimVideo(file, mFinalPath, mStartPosition, mEndPosition, mOnTrimVideoListener);
             }
           } else {
@@ -256,18 +257,17 @@ public class DeepVideoTrimmer extends FrameLayout
     long originalLength = file.length();
     long totalFileSizeInKB = (originalLength / 1024);
     int compressedTotalSize = (int) getCompressedSize(totalFileSizeInKB);
+    initialLength = totalDuration;
     if (compressedTotalSize <= maxFileSize) {
-      getSizeFile(false);
       mStartPosition = 0;
       mEndPosition = totalDuration * 1000;
-      initialLength = totalDuration;
+      getSizeFile(false);
     } else {
       int newDuration = (int) Math.ceil((float) maxFileSize * totalDuration / compressedTotalSize);
       int maxDuration = newDuration > 0 ? newDuration : totalDuration;
 
       mStartPosition = 0;
       mEndPosition = maxDuration * 1000;
-      initialLength = maxDuration;
       // set size for updated duration
       long newSize = ((compressedTotalSize / totalDuration) * maxDuration);
       newSize = (long) (newSize * compressionRatio);
