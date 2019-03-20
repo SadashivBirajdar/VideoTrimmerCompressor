@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -54,6 +55,7 @@ public class DeepVideoTrimmer extends FrameLayout
   private TextView mTextTimeFrame;
   private TextView mTextTime;
   private TimeLineView mTimeLineView;
+  private FloatingActionButton mSendVideo;
 
   private Uri mSrc;
   private String mFinalPath;
@@ -134,57 +136,13 @@ public class DeepVideoTrimmer extends FrameLayout
     mTextTimeFrame = findViewById(R.id.textTimeSelection);
     mTextTime = findViewById(R.id.textTime);
     mTimeLineView = findViewById(R.id.timeLineView);
-    View viewButtonCancel = findViewById(R.id.btCancel);
-    View viewButtonSave = findViewById(R.id.btSave);
-
-    if (viewButtonCancel != null) {
-      viewButtonCancel.setOnClickListener(new OnClickListener() {
-        @Override
-        public void onClick(View view) {
-          mOnTrimVideoListener.cancelAction();
-        }
-      });
-    }
-
-    if (viewButtonSave != null) {
-      viewButtonSave.setOnClickListener(new OnClickListener() {
-        @Override
-        public void onClick(View view) {
-
-          if (letUserProceed) {
-            // user didn't selected cropping duration and compression ratio is 1MB
-            if (mStartPosition <= 0 && mEndPosition >= mDuration && compressionRatio == 1024.0) {
-              mOnTrimVideoListener.getResult(mSrc);
-            } else {
-              mPlayView.setVisibility(View.VISIBLE);
-              mVideoView.pause();
-
-              MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-              mediaMetadataRetriever.setDataSource(getContext(), mSrc);
-              long METADATA_KEY_DURATION = Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-
-              if (mSrc.getPath() == null) {
-                return;
-              }
-              File file = new File(mSrc.getPath());
-
-              if (mTimeVideo < MIN_TIME_FRAME) {
-
-                if ((METADATA_KEY_DURATION - mEndPosition) > (MIN_TIME_FRAME - mTimeVideo)) {
-                  mEndPosition += (MIN_TIME_FRAME - mTimeVideo);
-                } else if (mStartPosition > (MIN_TIME_FRAME - mTimeVideo)) {
-                  mStartPosition -= (MIN_TIME_FRAME - mTimeVideo);
-                }
-              }
-              mOnTrimVideoListener.trimStarted();
-              startTrimVideo(file, mFinalPath, mStartPosition, mEndPosition, mOnTrimVideoListener);
-            }
-          } else {
-            Toast.makeText(getContext(), "Please trim your video less than 15 MB of size", Toast.LENGTH_SHORT).show();
-          }
-        }
-      });
-    }
+    mSendVideo = findViewById(R.id.sendVideo);
+    mSendVideo.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        startTrimming();
+      }
+    });
 
     mListeners = new ArrayList<>();
     mListeners.add(this);
@@ -221,6 +179,39 @@ public class DeepVideoTrimmer extends FrameLayout
     mVideoView.setOnTouchListener(mTouchListener);
 
     setDefaultDestinationPath();
+  }
+
+  private void startTrimming() {
+    if (letUserProceed) {
+      if (mStartPosition <= 0 && mEndPosition >= mDuration) {
+        mOnTrimVideoListener.getResult(mSrc);
+      } else {
+        mPlayView.setVisibility(View.VISIBLE);
+        mVideoView.pause();
+
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(getContext(), mSrc);
+        long METADATA_KEY_DURATION = Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+
+        if (mSrc.getPath() == null) {
+          return;
+        }
+        File file = new File(mSrc.getPath());
+
+        if (mTimeVideo < MIN_TIME_FRAME) {
+
+          if ((METADATA_KEY_DURATION - mEndPosition) > (MIN_TIME_FRAME - mTimeVideo)) {
+            mEndPosition += (MIN_TIME_FRAME - mTimeVideo);
+          } else if (mStartPosition > (MIN_TIME_FRAME - mTimeVideo)) {
+            mStartPosition -= (MIN_TIME_FRAME - mTimeVideo);
+          }
+        }
+        mOnTrimVideoListener.trimStarted();
+        startTrimVideo(file, mFinalPath, mStartPosition, mEndPosition, mOnTrimVideoListener);
+      }
+    } else {
+      Toast.makeText(getContext(), "Please trim your video less than 15 MB of size", Toast.LENGTH_SHORT).show();
+    }
   }
 
   public void setVideoURI(final Uri videoURI) {

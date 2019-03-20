@@ -6,11 +6,36 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+  <FrameLayout
+      android:id="@+id/layout_surface_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/black"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+    <VideoView
+        android:id="@+id/video_loader"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
+
+    <ImageView
+        android:id="@+id/icon_video_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/ic_vector_play_gray"
+        tools:ignore="ContentDescription"/>
+
+  </FrameLayout>
+
   <RelativeLayout
       android:id="@+id/topLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:background="@color/background_video_color"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent">
@@ -83,64 +108,14 @@
 
   </RelativeLayout>
 
-  <FrameLayout
-      android:id="@+id/layout_surface_view"
-      android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:background="@android:color/black"
-      app:layout_constraintBottom_toTopOf="@+id/bottomLayout"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/topLayout">
-
-    <VideoView
-        android:id="@+id/video_loader"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"/>
-
-    <ImageView
-        android:id="@+id/icon_video_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:srcCompat="@drawable/ic_vector_play_gray"
-        tools:ignore="ContentDescription"/>
-
-  </FrameLayout>
-
-  <LinearLayout
-      android:id="@+id/bottomLayout"
-      android:layout_width="match_parent"
+  <android.support.design.widget.FloatingActionButton
+      android:id="@+id/sendVideo"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:orientation="horizontal"
+      android:layout_margin="@dimen/_16sdp"
+      android:scaleType="centerInside"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent">
-
-    <Button
-        android:id="@+id/btCancel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@drawable/shape_button"
-        android:text="@string/cancel"
-        android:textColor="@android:color/white"/>
-
-    <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:background="@color/white"/>
-
-    <Button
-        android:id="@+id/btSave"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@drawable/shape_button"
-        android:text="@string/save"
-        android:textColor="@android:color/white"/>
-
-  </LinearLayout>
+      app:layout_constraintRight_toRightOf="parent"
+      app:srcCompat="@drawable/ic_send_video"/>
 
 </android.support.constraint.ConstraintLayout>
